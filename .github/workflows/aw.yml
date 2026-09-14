@@ -1,0 +1,38 @@
+name: aw
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'Restaurant query'
+        required: true
+        default: 'デート'
+      limit:
+        description: 'Maximum results'
+        required: false
+        default: '5'
+
+permissions:
+  contents: read
+
+jobs:
+  act:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Build AW target
+        run: go build -o /tmp/washoku ./cmd/washoku
+
+      - name: Run AW
+        env:
+          QUERY: ${{ inputs.query }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          echo "=== washoku AW ==="
+          echo "query: $QUERY"
+          /tmp/washoku --limit "$LIMIT" "$QUERY"
