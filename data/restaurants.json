@@ -1,0 +1,7 @@
+[
+  {"id":"restaurant-001","name":"いまがわ食堂","area":"川崎","category":"食堂","genre":["魚介","海鮮","定食"],"budget_yen":2000,"meal":["lunch","dinner"],"fish":"high","freshness":"high","visual_appeal":"medium","cost_performance":"high","target_use":["solo","casual"],"tags":["川崎","魚","定食","2000円","一人利用"]},
+  {"id":"restaurant-002","name":"井魚家いむら","area":"川崎","category":"和食","genre":["魚介","刺身","定食"],"budget_yen":2000,"meal":["lunch","dinner"],"fish":"high","freshness":"high","visual_appeal":"high","cost_performance":"high","target_use":["solo","casual"],"tags":["川崎","魚","刺身","定食","2000円"]},
+  {"id":"restaurant-003","name":"市民食堂 魚金","area":"川崎","category":"食堂","genre":["魚介","海鮮","定食"],"budget_yen":2000,"meal":["lunch","dinner"],"fish":"high","freshness":"high","visual_appeal":"medium","cost_performance":"high","target_use":["solo","casual"],"tags":["川崎","魚","食堂","海鮮","2000円"]},
+  {"id":"restaurant-004","name":"さか本","area":"川崎","category":"市場食堂","genre":["魚介","海鮮丼","定食","市場"],"budget_yen":2000,"meal":["lunch"],"fish":"very_high","freshness":"very_high","visual_appeal":"medium","cost_performance":"very_high","market_direct":true,"target_use":["solo","seafood","fresh_fish"],"tags":["川崎","市場","魚","海鮮丼","本まぐろ","新鮮","2000円"]},
+  {"id":"restaurant-005","name":"鮨あらい","area":"川崎","category":"寿司","genre":["寿司","魚介","海鮮丼"],"budget_yen":2000,"meal":["lunch"],"fish":"very_high","freshness":"very_high","visual_appeal":"high","cost_performance":"high","market_direct":true,"target_use":["solo","sushi","fresh_fish"],"tags":["川崎","寿司","鮨","海鮮丼","旬","新鮮"]}
+]
