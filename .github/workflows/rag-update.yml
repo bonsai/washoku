@@ -2,32 +2,81 @@ name: rag-update
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '17 0 * * *'
   push:
     paths:
       - 'documents/**'
       - 'rag/metadata.jsonl'
       - 'rag/chunks.jsonl'
+      - 'cmd/rag-update/**'
       - '.github/workflows/rag-update.yml'
 
 permissions:
   contents: write
 
+concurrency:
+  group: rag-growth
+  cancel-in-progress: false
+
 jobs:
-  update:
+  grow:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
       - uses: actions/setup-go@v5
         with:
           go-version: '1.24'
+
       - name: Build updater
         run: go build -o /tmp/rag-update ./cmd/rag-update
-      - name: Update runtime RAG data
+
+      - name: Snapshot current RAG
+        run: |
+          cp data/restaurants.json /tmp/restaurants.before.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('data/restaurants.json')
+          if p.exists():
+              data = json.loads(p.read_text())
+              print(f'RAG before: {len(data)} records')
+          else:
+              print('RAG before: 0 records')
+          PY
+
+      - name: Grow runtime RAG
         run: /tmp/rag-update
-      - name: Commit generated data
+
+      - name: Measure growth
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          before = Path('/tmp/restaurants.before.json')
+          after = Path('data/restaurants.json')
+          old = json.loads(before.read_text()) if before.exists() else []
+          new = json.loads(after.read_text())
+          old_ids = {x.get('id') for x in old if isinstance(x, dict)}
+          new_ids = {x.get('id') for x in new if isinstance(x, dict)}
+          added = sorted(new_ids - old_ids)
+          print(f'RAG after: {len(new)} records')
+          print(f'RAG growth: +{len(added)} records')
+          for x in added:
+              print(f'  + {x}')
+          PY
+
+      - name: Commit grown RAG
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/restaurants.json
-          git diff --cached --quiet || git commit -m 'chore: update RAG runtime data'
+          if git diff --cached --quiet; then
+            echo 'No RAG growth.'
+            exit 0
+          fi
+          git commit -m 'chore: grow RAG runtime data'
           git push
