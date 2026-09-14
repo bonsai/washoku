@@ -20,6 +20,39 @@ Interface
 
 **RAG is not REST.** RAG is the knowledge/retrieval layer. REST, MCP, and CLI are interchangeable interfaces around it.
 
+## Setup and run
+
+First time:
+
+```bash
+git clone https://github.com/bonsai/washoku.git
+cd washoku
+./set.sh
+./run.sh
+```
+
+After setup, `run.sh` is runtime-only. It does not clone, pull, or install anything.
+
+One-shot query:
+
+```bash
+./run.sh "川崎で2000円以内、新鮮な魚"
+```
+
+Search mode:
+
+```text
+washoku> search 川崎 魚 新鮮
+```
+
+If `./set.sh` or `./run.sh` is not executable on a fresh checkout, run once with:
+
+```bash
+bash set.sh
+```
+
+`set.sh` creates `.venv`, installs `requirements.txt` when present, runs the retriever tests, and makes both scripts executable.
+
 ## Current corpus
 
 Five initial restaurant documents are stored under `documents/`, with structured metadata and retrieval chunks under `rag/`.
