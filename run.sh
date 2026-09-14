@@ -1,33 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="https://github.com/bonsai/washoku.git"
-NAME="washoku"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET="${ROOT}/${NAME}"
+cd "${ROOT}"
 
 printf '\n=== washoku RAG ===\n\n'
 
-command -v git >/dev/null 2>&1 || { echo 'git が見つかりません。' >&2; exit 1; }
-command -v python3 >/dev/null 2>&1 || { echo 'python3 が見つかりません。' >&2; exit 1; }
-
-if [[ ! -d "${TARGET}/.git" ]]; then
-  echo "Clone: ${REPO}"
-  git clone "${REPO}" "${TARGET}"
-else
-  echo "Update: ${TARGET}"
-  git -C "${TARGET}" pull --ff-only
+PYTHON="${ROOT}/.venv/bin/python"
+if [[ ! -x "${PYTHON}" ]]; then
+  echo '環境が未セットアップです。先に ./set.sh を実行してください。' >&2
+  exit 1
 fi
 
-CLI="${TARGET}/rag/cli.py"
+CLI="${ROOT}/rag/cli.py"
 [[ -f "${CLI}" ]] || { echo "rag/cli.py が見つかりません。" >&2; exit 1; }
 
 ask() {
-  python3 "${CLI}" ask "$@"
+  "${PYTHON}" "${CLI}" ask "$@"
 }
 
 search() {
-  python3 "${CLI}" search "$@"
+  "${PYTHON}" "${CLI}" search "$@"
 }
 
 if [[ $# -gt 0 ]]; then
@@ -35,7 +28,7 @@ if [[ $# -gt 0 ]]; then
   exit $?
 fi
 
-printf '\nRAG ready. 質問を入力してください。\n'
+printf 'RAG ready. 質問を入力してください。\n'
 printf '終了: exit / 検索: search <query>\n\n'
 
 while true; do
