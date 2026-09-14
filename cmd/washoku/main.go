@@ -12,36 +12,37 @@ import (
 )
 
 type Restaurant struct {
-	ID               string   `json:"id"`
-	Name             string   `json:"name"`
-	Area             string   `json:"area"`
-	Category         string   `json:"category"`
-	Genre            []string `json:"genre"`
-	BudgetYen        int      `json:"budget_yen"`
-	Meal             []string `json:"meal"`
-	Fish             string   `json:"fish"`
-	Freshness        string   `json:"freshness"`
-	VisualAppeal     string   `json:"visual_appeal"`
-	CostPerformance  string   `json:"cost_performance"`
-	TargetUse        []string `json:"target_use"`
-	Tags             []string `json:"tags"`
-	MarketDirect     bool     `json:"market_direct"`
+	ID string `json:"id"`
+	Name string `json:"name"`
+	Area string `json:"area"`
+	Category string `json:"category"`
+	Genre []string `json:"genre"`
+	BudgetYen int `json:"budget_yen"`
+	Meal []string `json:"meal"`
+	Fish string `json:"fish"`
+	Freshness string `json:"freshness"`
+	VisualAppeal string `json:"visual_appeal"`
+	CostPerformance string `json:"cost_performance"`
+	TargetUse []string `json:"target_use"`
+	Tags []string `json:"tags"`
+	MarketDirect bool `json:"market_direct"`
 }
 
 type Intent struct {
 	BudgetMax int
-	Area      string
+	Area string
 	Instagram bool
-	Visual    bool
-	Fish      bool
-	Fresh     bool
-	Solo      bool
-	Dinner    bool
+	Visual bool
+	Fish bool
+	Fresh bool
+	Solo bool
+	Dinner bool
+	Date bool
 }
 
 type Result struct {
 	Restaurant
-	Score  float64
+	Score float64
 	Reason []string
 }
 
@@ -71,6 +72,7 @@ func intent(q string) Intent {
 	i.Fresh = strings.Contains(q, "新鮮") || strings.Contains(q, "鮮度") || strings.Contains(q, "市場") || strings.Contains(q, "直送")
 	i.Solo = strings.Contains(q, "一人") || strings.Contains(q, "ひとり")
 	i.Dinner = strings.Contains(q, "夜") || strings.Contains(q, "夕食") || strings.Contains(q, "ディナー")
+	i.Date = strings.Contains(q, "デート") || strings.Contains(q, "date")
 	return i
 }
 
@@ -81,18 +83,20 @@ func score(q string, r Restaurant) (float64, []string) {
 	if i.Area != "" && r.Area == i.Area { s += 0.5; reasons = append(reasons, "エリア一致") }
 	if i.BudgetMax > 0 && r.BudgetYen <= i.BudgetMax { s += 0.3; reasons = append(reasons, "予算内") }
 	if i.Fish {
-		if r.Fish == "very_high" { s += 1.0; reasons = append(reasons, "魚評価が非常に高い")
-		} else if r.Fish == "high" { s += 0.6; reasons = append(reasons, "魚評価が高い") }
+		if r.Fish == "very_high" { s += 1.0; reasons = append(reasons, "魚評価が非常に高い") } else if r.Fish == "high" { s += 0.6; reasons = append(reasons, "魚評価が高い") }
 	}
 	if i.Fresh {
-		if r.Freshness == "very_high" { s += 1.0; reasons = append(reasons, "鮮度評価が非常に高い")
-		} else if r.Freshness == "high" { s += 0.5; reasons = append(reasons, "鮮度評価が高い") }
+		if r.Freshness == "very_high" { s += 1.0; reasons = append(reasons, "鮮度評価が非常に高い") } else if r.Freshness == "high" { s += 0.5; reasons = append(reasons, "鮮度評価が高い") }
 	}
 	if i.Visual {
-		if r.VisualAppeal == "high" { s += 1.2; reasons = append(reasons, "見栄えが高い")
-		} else if r.VisualAppeal == "medium" { s += 0.4; reasons = append(reasons, "見栄えが中程度") }
+		if r.VisualAppeal == "high" { s += 1.2; reasons = append(reasons, "見栄えが高い") } else if r.VisualAppeal == "medium" { s += 0.4; reasons = append(reasons, "見栄えが中程度") }
 	}
 	if i.Instagram && r.VisualAppeal == "high" { s += 0.8; reasons = append(reasons, "Instagram向き") }
+	if i.Date {
+		if has(r.TargetUse, "date") || has(r.TargetUse, "casual") { s += 0.8; reasons = append(reasons, "デート利用向き") }
+		if r.VisualAppeal == "high" { s += 0.6; reasons = append(reasons, "デートで映えやすい") }
+		if has(r.TargetUse, "solo") { s -= 0.2 }
+	}
 	if i.Solo && has(r.TargetUse, "solo") { s += 0.5; reasons = append(reasons, "一人利用向き") }
 	if i.Dinner && has(r.Meal, "dinner") { s += 0.3; reasons = append(reasons, "夜利用可能") }
 	if i.Instagram && r.CostPerformance == "high" { s += 0.3; reasons = append(reasons, "コスパ良") }
